@@ -1,117 +1,64 @@
-## Python_HeroesOfPymoli
+# Python_HeroesOfPymoli
+As a Lead Analyst for an independent gaming company. You've been assigned the task of analyzing the data for their most recent fantasy game Heroes of Pymoli.
+Like many others in its genre, the game is free-to-play, but players are encouraged to purchase optional items that enhance their playing experience. As a first task, the company would like you to generate a report that breaks down the game's purchasing data into meaningful insights.
 
-from tabulate import tabulate
-import json
-import pandas as pd
-import numpy as np
+Your final report should include each of the following:
 
-with open('purchase_data.json') as json_data:
-        data = json.load(json_data)
-        df = pd.DataFrame(data)
+## Player Count
 
-print " Heroes of Pymoli","\n"
-print "==================","\n"
+    Total Number of Players
 
-# Total Number of Players
-playersCount = df.groupby('SN')['Item ID'].nunique().count()
-print "**Total Number of Players**", "\n"
-print tabulate([[playersCount]], headers=['Total Players'], tablefmt='fancy_grid').encode('utf-8')
+## Purchasing Analysis (Total)
 
-#**Purchasing Analysis (Total)**
-# Number of Unique Items
-uniqueItems = df.groupby('Item ID')['SN'].nunique()
-totUniqItems = uniqueItems.count()
+    Number of Unique Items
+    Average Purchase Price
+    Total Number of Purchases
+    Total Revenue
 
-# Total Number of Purchases
-totPurchases = df['SN'].count()
-# Total Revenue
-totRevenue = df['Price'].sum()
-# Average Purchase Price
-avgPurchasePrice = totRevenue/totPurchases
+## Gender Demographics
 
-print "\n**Purchasing Analysis (Total)**", "\n"
-print tabulate([[totUniqItems,avgPurchasePrice, totPurchases,totRevenue]], headers=['Num of Unique Items', 'Average Price', 'Num of Purchases' ,'Total Revenue'], tablefmt='fancy_grid').encode('utf-8'),"\n"
+    Percentage and Count of Male Players
+    Percentage and Count of Female Players
+    Percentage and Count of Other / Non-Disclosed
 
-#**Gender Demographics**
-#* Percentage and Count of Male Players
-#* Percentage and Count of Female Players
-#* Percentage and Count of Other / Non-Disclosed
+## Purchasing Analysis (Gender)
 
-playerCount = df.groupby('Gender')['SN'].count()
-totPlayerCount = df['Gender'].count()
-playerPercentages = 100 * (playerCount / totPlayerCount)
+    The below each broken by gender
+        Purchase Count
+        Average Purchase Price
+        Total Purchase Value
+        Normalized Totals
 
-print  "\n**Gender Demographics**", "\n"
-print tabulate([[playerPercentages, playerCount ]], headers=['Percentage of Players', 'Total Count'], tablefmt='fancy_grid').encode('utf-8'),"\n"
+## Age Demographics
 
-#*Purchasing Analysis (Gender)**
-# * Purchase Count
-# * Average Purchase Price
-# * Total Purchase Value
-# * normalized totals
-genderPur = df.groupby('Gender').agg({'Price':['count','mean','sum']})
-print "\n**Analysis (Gender)**","\n"
-print tabulate(genderPur,
-        headers=['Purchase Count', 'Average Purchase Price', 'Total Purchase Value'],
-        tablefmt='fancy_grid').encode('utf-8'),"\n"
+    The below each broken into bins of 4 years (i.e. <10, 10-14, 15-19, etc.)
+        Purchase Count
+        Average Purchase Price
+        Total Purchase Value
+        Normalized Totals
 
-#**Age Demographics**
-#* The below each broken into bins of 4 years (i.e. &lt;10, 10-14, 15-19, etc.)
-#  * Purchase Count
-#  * Average Purchase Price
-#  * Total Purchase Value
-#  * Normalized Totals
-bins = range(6,50,4)
-ageDemogBins = df.groupby(pd.cut(df.Age,bins)).agg({'Price':['count','mean','sum']});
-ageDemogBins.columns = ['Purchase Count', 'Average Purchase Price', 'Total Purchase Value'];
-ageDemogBins['Normalized Totals'] = ageDemogBins['Total Purchase Value']/np.sum(ageDemogBins['Total Purchase Value'])
+## Top Spenders
 
-print "\n**Age Demographics**", '\n'
-print tabulate(ageDemogBins,
-        headers=['Age Range','Purchase Count', 'Average Purchase Price', 'Total Purchase Value'],
-        tablefmt='fancy_grid').encode('utf-8'),"\n"
+    Identify the the top 5 spenders in the game by total purchase value, then list (in a table):
+        SN
+        Purchase Count
+        Average Purchase Price
+        Total Purchase Value
 
-#* Identify the the top 5 spenders in the game by total purchase value, then list (in a table):
-#    * SN
-#    * Purchase Count
-#    * Average Purchase Price
-#    * Total Purchase Value
+## Most Popular Items
 
-topSpenders = df.groupby('SN').agg({'Price':['count','mean','sum']});
-topSpenders.columns = ['Purchase Count', 'Average Purchase Price', 'Total Purchase Value'];
-topSpenders =topSpenders.sort_values(by = 'Total Purchase Value', ascending=False).head(5)
+    Identify the 5 most popular items by purchase count, then list (in a table):
+        Item ID
+        Item Name
+        Purchase Count
+        Item Price
+        Total Purchase Value
 
-print "\n**Top Spenders**", "\n"
-print tabulate(topSpenders, headers=['SN','Purchase Count', 'Average Purchase Price', 'Total Purchase Value'], tablefmt='fancy_grid').encode('utf-8'),"\n"
+## Most Profitable Items
 
-#**Identify the 5 most popular items by purchase count, then list (in a table):
-#  * Item ID
-#  * Item Name
-#  * Purchase Count
-#  * Item Price
-#  * Total Purchase Value
-
-pc = df.groupby('Item ID').agg({'Price':['count','mean','sum']});
-pc.columns = ['Purchase Count', 'Average Purchase Price', 'Total Purchase Value'];
-pc.sort_values(by = 'Total Purchase Value', ascending=False).head(5)
-
-pc = df.groupby('Item ID').agg({'Item Name': 'first','Price':['count','first','sum']})
-pc.columns = ['Purchase Count','Item Price','Total Purchase Value','Item Name']
-pc = pc[['Item Name','Purchase Count','Item Price','Total Purchase Value']]
-popItems_PurCount = pc.sort_values(by = 'Purchase Count',ascending=False).head(5)
-
-print "\n**Most Popular Items by Purchase**", "\n"
-print tabulate(popItems_PurCount, headers=['Item ID','Item Name','Purchase Count','Item Price','Total Purchase Value'], tablefmt='fancy_grid').encode('utf-8'),"\n"
-
-#* Identify the 5 most profitable items by total purchase value, then list (in a table):
-#  * Item ID
-#  * Item Name
-#  * Purchase Count
-#  * Item Price
-#  * Total Purchase Value
-
-pc = pc[['Item Name','Purchase Count','Item Price','Total Purchase Value']]
-profItems_PurCount = pc.sort_values(by = 'Total Purchase Value',ascending=False).head(5)
-
-print "\n**Most Profitable Items**", "\n"
-print tabulate(profItems_PurCount, headers=['Item ID','Item Name','Purchase Count','Item Price','Total Purchase Value'], tablefmt='fancy_grid').encode('utf-8'),"\n"
+    Identify the 5 most profitable items by total purchase value, then list (in a table):
+        Item ID
+        Item Name
+        Purchase Count
+        Item Price
+        Total Purchase Value
